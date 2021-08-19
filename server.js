@@ -4,6 +4,7 @@ import http from "http";
 import bodyParser from "body-parser";
 import cors from "cors";
 import morgan from "morgan";
+import dotenv from "dotenv";
 
 import services from "./utils/services.js";
 import UserRoute from "./route/user.js";
@@ -12,13 +13,15 @@ import ChatRoute from "./route/chat.js";
 import { Server } from "socket.io";
 import { socketManager } from "./socketManager/socketManager.js";
 
+dotenv.config("./.env")
+
 const app = express();
 app.use(cors());
 export const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
 mongoose
-  .connect(services.mongoURI, {
+  .connect(process.env.mongoURI, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
     useCreateIndex: true,
