@@ -1,7 +1,7 @@
 import { AuthTypes } from "./auth.types";
 
 import axios from "axios";
-import { SERVER_URL, LOADER_DELAY } from "../../utils/services";
+import { SERVER_URL, LOADER_DELAY, HEADERS } from "../../utils/services";
 
 export const signUp = (details) => async (dispatch) => {
   dispatch({
@@ -78,11 +78,7 @@ export const setCurrentUser = () => async (dispatch, getState) => {
       const { data } = await axios({
         method: "get",
         url: `${SERVER_URL}/user/get-user-details`,
-        headers: {
-          Accept: "application/json",
-          Authorization:
-            "Bearer " + localStorage.getItem("whats_app_clone_token"),
-        },
+        headers: HEADERS,
       });
       dispatch({
         type: AuthTypes.AUTH_SUCCESS,

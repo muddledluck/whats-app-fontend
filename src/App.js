@@ -19,20 +19,21 @@ import {
   selectSocket,
 } from "./redux/auth/auth.selector";
 import { setCurrentUser, updateCurrentUser } from "./redux/auth/auth.action";
-function App({ auth, setCurrentUser, socket, updateCurrentUser }) {
+
+function App({ auth, setCurrentUser, socket, updateCurrentUser, currentUser }) {
   useEffect(() => {
     if (!auth && localStorage.getItem("whats_app_clone_token")) {
       setCurrentUser();
     }
   }, [auth, setCurrentUser]);
   useEffect(() => {
-    console.log(socket);
-    if (Object.keys(socket).length > 0) {
-      socket.on("marked_user_online", (user) => {
+    if (Object.keys(socket).length > 0 && currentUser._id) {
+      socket.on(`user_update_${currentUser._id}`, (user) => {
         updateCurrentUser(user);
       });
     }
-  }, [socket, updateCurrentUser]);
+  }, [socket, updateCurrentUser, currentUser]);
+
   return (
     <div className="app">
       <Switch>

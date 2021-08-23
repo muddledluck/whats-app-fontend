@@ -42,6 +42,7 @@
   border-radius: 10px;
   background-color: #ffffff;
   margin-bottom: 30px;
+  display: flex;
 }
 
 .chat__reciver {
@@ -52,6 +53,8 @@
 .chat__timestamp {
   margin-left: 10px;
   font-size: xx-small;
+  margin-top: 10px;
+  display: flex;
 }
 
 .chat__name {
