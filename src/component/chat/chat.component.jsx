@@ -9,16 +9,23 @@ import {
 } from "@material-ui/icons";
 import TimerIcon from "@material-ui/icons/Timer";
 import CheckIcon from "@material-ui/icons/Check";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import ReactTimeago from "react-timeago";
-import { selectCurrentUser } from "../../redux/auth/auth.selector";
+import {
+  selectCurrentUser,
+  selectSocket,
+} from "../../redux/auth/auth.selector";
 import {
   selectOtherUser,
   selectOtherUserSocketId,
   selectSelectedConversationId,
 } from "../../redux/conversation/conversation.selector";
-import { getPreviousConversationMessages } from "../../redux/messages/message.action";
+import {
+  createMessage,
+  getPreviousConversationMessages,
+  newMessageRecived,
+} from "../../redux/messages/message.action";
 import {
   selectMessageError,
   selectMessagesLoading,
@@ -35,7 +42,20 @@ function Chat({
   otherUser,
   userSocketId,
   currentUser,
+  createMessage,
+  socket,
+  newMessageRecived,
 }) {
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (Object.keys(socket).length) {
+      socket.on("new_message", (message) => {
+        newMessageRecived(message);
+      });
+    }
+  }, [socket, newMessageRecived]);
+
   useEffect(() => {
     if (conversationId) {
       getPreviousMessages(conversationId);
@@ -51,7 +71,10 @@ function Chat({
     return <p>No Chat Selected</p>;
   }
 
-  console.log("prevMesage", prevMessages);
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    createMessage(conversationId, message);
+  };
   return (
     <div className="chat">
       <div className="chat__header">
@@ -93,44 +116,36 @@ function Chat({
             {message.content}
             <span className="chat__timestamp">
               <ReactTimeago date={message.createdAt} />
-              {message.isSeen ? (
-                "seen"
-              ) : message.isRecived ? (
-                <DoneAll fontSize="inherit" />
-              ) : message.isSent ? (
-                <CheckIcon />
+              {message.author._id === currentUser._id ? (
+                <>
+                  {message.isSeen ? (
+                    <DoneAll
+                      style={{ color: "aqua" }}
+                      className="chat__svg__icon"
+                    />
+                  ) : message.isRecived ? (
+                    <DoneAll className="chat__svg__icon" />
+                  ) : message.isSent ? (
+                    <CheckIcon className="chat__svg__icon" />
+                  ) : (
+                    <TimerIcon className="chat__svg__icon" />
+                  )}
+                </>
               ) : (
-                <TimerIcon />
+                ""
               )}
             </span>
           </p>
         ))}
-        {/* <p className="chat__message">
-          <span className="chat__name">Saral</span>
-          This is a message
-          <span className="chat__timestamp">{new Date().toLocaleString()}</span>
-        </p>
-isRecived: false
-isSeen: false
-isSent: false
-        <p className="chat__message chat__reciver">
-          <span className="chat__name">Saral</span>
-          This is a message reciver
-          <span className="chat__timestamp">
-            {new Date().toLocaleString()} <DoneAll />
-          </span>
-        </p>
-
-        <p className="chat__message">
-          <span className="chat__name">Saral</span>
-          This is a message
-          <span className="chat__timestamp">{new Date().toLocaleString()}</span>
-        </p> */}
       </div>
       <div className="chat__footer">
         <InsertEmoticon />
-        <form>
-          <input placeholder="Type a message" type="text" />
+        <form onSubmit={handleSendMessage}>
+          <input
+            placeholder="Type a message"
+            type="text"
+            onChange={(e) => setMessage(e.target.value)}
+          />
           <button type="submit">Send</button>
         </form>
         <Mic />
@@ -146,9 +161,12 @@ const mapStateToProps = (state) => ({
   otherUser: selectOtherUser(state),
   userSocketId: selectOtherUserSocketId(state),
   currentUser: selectCurrentUser(state),
+  socket: selectSocket(state),
 });
 const mapDispatchToProps = (dispatch) => ({
   getPreviousMessages: (id) => dispatch(getPreviousConversationMessages(id)),
+  createMessage: (convId, content) => dispatch(createMessage(convId, content)),
+  newMessageRecived: (message) => dispatch(newMessageRecived(message)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Chat);

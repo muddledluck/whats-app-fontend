@@ -37,16 +37,16 @@ export const getPreviousConversationMessages =
 export const createMessage =
   (conversationId, content) => async (dispatch, getState) => {
     try {
-      const state = getState();
+      const { auth } = getState();
       const details = {
         conversationId,
         content,
         tempId: randomString(10),
-        author: state.auth.currentUser._id,
+        author: auth.currentUser._id,
       };
       dispatch({
         type: MessageTypes.NEW_MESSAGE,
-        data: details,
+        payload: details,
       });
       const { data } = await axios({
         method: "POST",
@@ -54,12 +54,32 @@ export const createMessage =
         headers: HEADERS,
         data: details,
       });
+      auth.socket.emit("send_message", data.savedMessage);
       data.savedMessage.tempId = details.tempId;
+
       dispatch({
         type: MessageTypes.UPDATE_MESSAGE,
-        data: data.savedMessage,
+        payload: data.savedMessage,
       });
     } catch (error) {
       console.log("errorSendingMessage: ", error.response);
     }
   };
+
+export const newMessageRecived = (message) => async (dispatch, getState) => {
+  const { conversation } = getState();
+  console.log(
+    conversation.selectedConversation,
+    message.conversationId,
+    message
+  );
+  if (
+    conversation.selectedConversation &&
+    conversation.selectedConversation === message.conversationId
+  ) {
+    dispatch({
+      type: MessageTypes.NEW_MESSAGE,
+      payload: message,
+    });
+  }
+};

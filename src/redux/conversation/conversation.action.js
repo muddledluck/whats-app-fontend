@@ -35,6 +35,19 @@ export const selectConversation = (convId, user) => async (dispatch) => {
     payload: convId,
     user,
   });
+  try {
+    const { data } = await axios({
+      method: "GET",
+      url: `${SERVER_URL}/user/get-user-details/?userId=${user._id}`,
+      headers: HEADERS,
+    });
+    dispatch({
+      type: ConversationTypes.UPDATE_SELECTED_USER,
+      payload: data.user,
+    });
+  } catch (error) {
+    console.log(error.response);
+  }
 };
 
 export const updateSelectedUser = (user) => async (dispatch) => {

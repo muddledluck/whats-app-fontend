@@ -9,6 +9,7 @@ const INITIAL_STATE = {
   selectedConversation: null,
 
   otherUser: {},
+
 };
 
 const conversationReducer = (state = INITIAL_STATE, action) => {
@@ -82,11 +83,13 @@ const conversationReducer = (state = INITIAL_STATE, action) => {
         selectedConversation: action.payload,
         otherUser: action.user,
       };
+
     case ConversationTypes.UPDATE_SELECTED_USER:
       return {
         ...state,
         otherUser: action.payload,
       };
+
     default:
       return state;
   }
